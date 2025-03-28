@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using AITravelPlanner.Data.Repositories.Interfaces;
+using AITravelPlanner.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +71,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
