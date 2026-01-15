@@ -6,6 +6,11 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using AITravelPlanner.Data.Repositories.Interfaces;
+using AITravelPlanner.Data.Repositories;
+using AITravelPlanner.API.Workers;
+using AITravelPlanner.Services.Messaging;
+using AITravelPlanner.Services.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +20,14 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFlightService, FlightService>();
+builder.Services.AddScoped<ITravelService, TravelService>();
+builder.Services.AddScoped<IRecommendationService, AiRecommendationService>();
+builder.Services.AddSingleton<IMessagePublisher, RabbitMqPublisher>();
+builder.Services.AddHostedService<RabbitMqConsumerWorker>();
+
+builder.Services.Configure<AiServiceOptions>(builder.Configuration.GetSection("AIService"));
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddHttpClient<IRecommendationService, AiRecommendationService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"];
@@ -69,6 +82,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
