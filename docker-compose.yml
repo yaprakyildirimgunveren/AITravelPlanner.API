@@ -1,0 +1,50 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: AITravelPlanner.API/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=AITravelPlannerDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+      AIService__BaseUrl: "http://ai-service:8000"
+      RabbitMQ__HostName: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: "guest"
+      RabbitMQ__Password: "guest"
+      RabbitMQ__QueueName: "travel-events"
+    depends_on:
+      - sqlserver
+      - ai-service
+      - rabbitmq
+
+  ai-service:
+    build:
+      context: ./AITravelPlanner.AIService
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./AITravelPlanner.Frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:5000"
+    depends_on:
+      - api
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"

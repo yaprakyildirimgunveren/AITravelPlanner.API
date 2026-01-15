@@ -1,6 +1,8 @@
-﻿using AITravelPlanner.Domain.Entities;
+using AITravelPlanner.Domain.Entities;
+using AITravelPlanner.Services.Messaging;
 using AITravelPlanner.Services.Services.Abstract;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace AITravelPlanner.API.Controllers
 {
@@ -9,10 +11,12 @@ namespace AITravelPlanner.API.Controllers
     public class TravelController : ControllerBase
     {
         private readonly ITravelService _travelService;
+        private readonly IMessagePublisher _messagePublisher;
 
-        public TravelController(ITravelService travelService)
+        public TravelController(ITravelService travelService, IMessagePublisher messagePublisher)
         {
             _travelService = travelService;
+            _messagePublisher = messagePublisher;
         }
 
         [HttpGet("user/{userId}")]
@@ -34,6 +38,14 @@ namespace AITravelPlanner.API.Controllers
         public async Task<IActionResult> CreateTravel([FromBody] Travel travel)
         {
             var created = await _travelService.CreateAsync(travel);
+            var message = JsonSerializer.Serialize(new
+            {
+                Type = "travel.created",
+                TravelId = created.Id,
+                UserId = created.UserId,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            await _messagePublisher.PublishAsync(message);
             return CreatedAtAction(nameof(GetTravelById), new { id = created.Id }, created);
         }
 
