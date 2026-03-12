@@ -8,11 +8,11 @@
 ✅ Flight Search and Booking (via BiletBank API)  
 ✅ AI-based Travel Recommendations (via FastAPI)  
 ✅ User Authentication & Authorization (JWT)  
-✅ Database Management (EF Core + PostgreSQL)  
+✅ Database Management (EF Core + SQL Server / PostgreSQL)  
 ✅ RESTful API with OpenAPI Documentation (Swagger)  
-✅ CI/CD with GitHub Actions (To be added)  
+✅ CI/CD with GitHub Actions  
 ✅ Unit Testing (xUnit, Moq)  
-✅ RabbitMQ for Asynchronous Processing (Optional)  
+✅ RabbitMQ for Asynchronous Processing  
 
 ---
 
@@ -24,8 +24,8 @@
 - **Authentication:** JWT
 - **Logging:** Serilog
 - **Messaging Queue:** RabbitMQ (Optional)
-- **Containerization:** Docker (To be added)
-- **CI/CD:** GitHub Actions (To be added)
+- **Containerization:** Docker
+- **CI/CD:** GitHub Actions
 
 ---
 
@@ -43,6 +43,40 @@ AITravelPlanner/
 ```
 
 
+
+## 🧪 Local Development
+### Backend API (.NET)
+```bash
+dotnet restore
+dotnet run --project AITravelPlanner.API
+```
+
+### AI Service (FastAPI)
+```bash
+cd AITravelPlanner.AIService
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend (Next.js)
+```bash
+cd AITravelPlanner.Frontend
+npm install
+npm run dev
+```
+
+## 🐳 Docker Compose
+```bash
+docker compose up --build
+```
+
+Services:
+- API: http://localhost:5000
+- AI Service: http://localhost:8000/health
+- Frontend: http://localhost:3000
+- RabbitMQ UI: http://localhost:15672 (guest/guest)
 
 ## 👨‍💻 Contributors
 - **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
