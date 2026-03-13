@@ -139,11 +139,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-app.MapGet("/status", async (IHttpClientFactory httpClientFactory, IOptions<AiServiceOptions> aiOptions) =>
+app.MapGet("/health/db", async (ApplicationDbContext dbContext) =>
+{
+    var canConnect = await dbContext.Database.CanConnectAsync();
+    return Results.Ok(new { status = canConnect ? "ok" : "error" });
+});
+app.MapGet("/status", async (IHttpClientFactory httpClientFactory, IOptions<AiServiceOptions> aiOptions, IOptions<RabbitMqOptions> rabbitOptions, ApplicationDbContext dbContext) =>
 {
     var client = httpClientFactory.CreateClient();
     var aiBaseUrl = aiOptions.Value.BaseUrl?.TrimEnd('/') ?? "http://localhost:8000";
     var aiHealth = "unreachable";
+    var dbHealth = "unreachable";
+    var rabbitEnabled = rabbitOptions.Value.Enabled ? "enabled" : "disabled";
 
     try
     {
@@ -153,6 +160,16 @@ app.MapGet("/status", async (IHttpClientFactory httpClientFactory, IOptions<AiSe
     catch
     {
         aiHealth = "error";
+    }
+
+    try
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        dbHealth = canConnect ? "ok" : "error";
+    }
+    catch
+    {
+        dbHealth = "error";
     }
 
     var html = $@"
@@ -172,8 +189,11 @@ app.MapGet("/status", async (IHttpClientFactory httpClientFactory, IOptions<AiSe
   <div class=""card"">
     <h2>Service Status</h2>
     <div class=""row""><span>API</span><strong>ok</strong></div>
+    <div class=""row""><span>DB</span><strong>{dbHealth}</strong></div>
     <div class=""row""><span>AI Service</span><strong>{aiHealth}</strong></div>
+    <div class=""row""><span>RabbitMQ</span><strong>{rabbitEnabled}</strong></div>
     <div class=""row""><span>Health Endpoint</span><a href=""/health"">/health</a></div>
+    <div class=""row""><span>DB Health</span><a href=""/health/db"">/health/db</a></div>
     <div class=""row""><span>Swagger UI</span><a href=""/swagger"">/swagger</a></div>
   </div>
 </body>
