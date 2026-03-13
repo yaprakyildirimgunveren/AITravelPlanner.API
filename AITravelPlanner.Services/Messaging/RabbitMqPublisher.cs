@@ -17,8 +17,14 @@ namespace AITravelPlanner.Services.Messaging
             _logger = logger;
         }
 
-        public Task PublishAsync(string message, string? queueName = null, CancellationToken cancellationToken = default)
+        public async Task PublishAsync(string message, string? queueName = null, CancellationToken cancellationToken = default)
         {
+            if (!_options.Enabled)
+            {
+                _logger.LogInformation("RabbitMQ publishing disabled.");
+                return;
+            }
+
             var targetQueue = string.IsNullOrWhiteSpace(queueName) ? _options.QueueName : queueName;
             var factory = new ConnectionFactory
             {
@@ -29,18 +35,34 @@ namespace AITravelPlanner.Services.Messaging
                 VirtualHost = _options.VirtualHost
             };
 
-            using var connection = factory.CreateConnection();
-            using var channel = connection.CreateModel();
-            channel.QueueDeclare(queue: targetQueue, durable: true, exclusive: false, autoDelete: false);
+            try
+            {
+                await using var connection = await factory.CreateConnectionAsync(cancellationToken);
+                await using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+                await channel.QueueDeclareAsync(
+                    queue: targetQueue,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null,
+                    cancellationToken: cancellationToken);
 
             var body = Encoding.UTF8.GetBytes(message);
-            var properties = channel.CreateBasicProperties();
-            properties.Persistent = true;
+            var properties = new BasicProperties { Persistent = true };
 
-            channel.BasicPublish(exchange: string.Empty, routingKey: targetQueue, basicProperties: properties, body: body);
-            _logger.LogInformation("Message published to queue {QueueName}", targetQueue);
-
-            return Task.CompletedTask;
+                await channel.BasicPublishAsync(
+                    exchange: string.Empty,
+                    routingKey: targetQueue,
+                    mandatory: false,
+                    basicProperties: properties,
+                    body: body,
+                    cancellationToken: cancellationToken);
+                _logger.LogInformation("Message published to queue {QueueName}", targetQueue);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RabbitMQ publish failed.");
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace AITravelPlanner.API.Workers
         private readonly RabbitMqOptions _options;
         private readonly ILogger<RabbitMqConsumerWorker> _logger;
         private IConnection? _connection;
-        private IModel? _channel;
+        private IChannel? _channel;
 
         public RabbitMqConsumerWorker(
             IOptions<RabbitMqOptions> options,
@@ -23,8 +23,14 @@ namespace AITravelPlanner.API.Workers
             _logger = logger;
         }
 
-        public override Task StartAsync(CancellationToken cancellationToken)
+        public override async Task StartAsync(CancellationToken cancellationToken)
         {
+            if (!_options.Enabled)
+            {
+                _logger.LogInformation("RabbitMQ consumer disabled.");
+                return;
+            }
+
             var factory = new ConnectionFactory
             {
                 HostName = _options.HostName,
@@ -34,38 +40,66 @@ namespace AITravelPlanner.API.Workers
                 VirtualHost = _options.VirtualHost
             };
 
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
-            _channel.QueueDeclare(queue: _options.QueueName, durable: true, exclusive: false, autoDelete: false);
+            try
+            {
+                _connection = await factory.CreateConnectionAsync(cancellationToken);
+                _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+                await _channel.QueueDeclareAsync(
+                    queue: _options.QueueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null,
+                    cancellationToken: cancellationToken);
 
-            return base.StartAsync(cancellationToken);
+                await base.StartAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RabbitMQ consumer failed to start.");
+            }
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (_channel == null)
             {
                 _logger.LogWarning("RabbitMQ channel not initialized.");
-                return Task.CompletedTask;
+                return;
             }
 
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += (_, eventArgs) =>
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+            consumer.ReceivedAsync += async (_, eventArgs) =>
             {
                 var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
                 _logger.LogInformation("RabbitMQ message consumed: {Message}", message);
-                _channel.BasicAck(eventArgs.DeliveryTag, false);
+                if (_channel != null)
+                {
+                    await _channel.BasicAckAsync(eventArgs.DeliveryTag, false, stoppingToken);
+                }
             };
 
-            _channel.BasicConsume(queue: _options.QueueName, autoAck: false, consumer: consumer);
-            return Task.Delay(Timeout.Infinite, stoppingToken);
+            await _channel.BasicConsumeAsync(
+                queue: _options.QueueName,
+                autoAck: false,
+                consumer: consumer,
+                cancellationToken: stoppingToken);
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
 
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _channel?.Close();
-            _connection?.Close();
-            return base.StopAsync(cancellationToken);
+            if (_channel != null)
+            {
+                await _channel.CloseAsync(cancellationToken);
+            }
+
+            if (_connection != null)
+            {
+                await _connection.CloseAsync(cancellationToken);
+            }
+
+            await base.StopAsync(cancellationToken);
         }
     }
 }

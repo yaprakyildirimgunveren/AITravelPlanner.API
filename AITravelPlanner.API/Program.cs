@@ -11,6 +11,8 @@ using AITravelPlanner.Data.Repositories;
 using AITravelPlanner.API.Workers;
 using AITravelPlanner.Services.Messaging;
 using AITravelPlanner.Services.Options;
+using AITravelPlanner.Data.Seed;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,6 +116,13 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(dbContext);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -130,5 +139,48 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/status", async (IHttpClientFactory httpClientFactory, IOptions<AiServiceOptions> aiOptions) =>
+{
+    var client = httpClientFactory.CreateClient();
+    var aiBaseUrl = aiOptions.Value.BaseUrl?.TrimEnd('/') ?? "http://localhost:8000";
+    var aiHealth = "unreachable";
+
+    try
+    {
+        var response = await client.GetAsync($"{aiBaseUrl}/health");
+        aiHealth = response.IsSuccessStatusCode ? "ok" : $"error ({(int)response.StatusCode})";
+    }
+    catch
+    {
+        aiHealth = "error";
+    }
+
+    var html = $@"
+<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"" />
+  <title>AITravelPlanner Status</title>
+  <style>
+    body {{ font-family: Arial, Helvetica, sans-serif; background: #0b1020; color: #f4f6fb; padding: 24px; }}
+    .card {{ background: #121a33; padding: 16px; border-radius: 12px; max-width: 520px; }}
+    .row {{ display: flex; justify-content: space-between; padding: 8px 0; }}
+    a {{ color: #8aa2ff; }}
+  </style>
+</head>
+<body>
+  <div class=""card"">
+    <h2>Service Status</h2>
+    <div class=""row""><span>API</span><strong>ok</strong></div>
+    <div class=""row""><span>AI Service</span><strong>{aiHealth}</strong></div>
+    <div class=""row""><span>Health Endpoint</span><a href=""/health"">/health</a></div>
+    <div class=""row""><span>Swagger UI</span><a href=""/swagger"">/swagger</a></div>
+  </div>
+</body>
+</html>
+";
+
+    return Results.Content(html, "text/html");
+});
 
 app.Run();

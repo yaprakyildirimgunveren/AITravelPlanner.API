@@ -5,9 +5,10 @@ services:
       dockerfile: AITravelPlanner.API/Dockerfile
     ports:
       - "5000:5000"
+    env_file:
+      - ./.env.docker
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=AITravelPlannerDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
       AIService__BaseUrl: "http://ai-service:8000"
       RabbitMQ__HostName: "rabbitmq"
       RabbitMQ__Port: "5672"
@@ -55,11 +56,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    env_file:
+      - ./.env.docker
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "YourStrong!Passw0rd"
     ports:
       - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
