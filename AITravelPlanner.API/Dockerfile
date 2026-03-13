@@ -15,6 +15,7 @@ RUN dotnet publish "AITravelPlanner.API.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://0.0.0.0:5000

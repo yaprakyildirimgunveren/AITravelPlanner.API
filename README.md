@@ -51,6 +51,10 @@ dotnet restore
 dotnet run --project AITravelPlanner.API
 ```
 
+Health and status:
+- http://localhost:5000/health
+- http://localhost:5000/status
+
 ### AI Service (FastAPI)
 ```bash
 cd AITravelPlanner.AIService
@@ -66,6 +70,8 @@ cd AITravelPlanner.Frontend
 npm install
 npm run dev
 ```
+Environment:
+- Copy `AITravelPlanner.Frontend/.env.example` to `.env.local` for local runs.
 
 ## 🐳 Docker Compose
 ```bash
@@ -77,6 +83,9 @@ Services:
 - AI Service: http://localhost:8000/health
 - Frontend: http://localhost:3000
 - RabbitMQ UI: http://localhost:15672 (guest/guest)
+
+Docker env file:
+- `.env.docker` contains SQL Server password and connection string.
 
 ## 👨‍💻 Contributors
 - **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
