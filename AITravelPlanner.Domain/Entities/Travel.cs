@@ -1,4 +1,4 @@
-﻿namespace AITravelPlanner.Domain.Entities
+namespace AITravelPlanner.Domain.Entities
 {
     public enum TravelType { Business, Leisure, Adventure, Family, Solo }
 
@@ -10,7 +10,7 @@
         public TravelType Type { get; set; }
         public decimal Budget { get; set; }
         public int UserId { get; set; }
-        public User User { get; set; }
+        public User User { get; set; } = null!;
         public ICollection<Activity> Activities { get; set; } = new List<Activity>();
     }
 }
