@@ -32,7 +32,7 @@ builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("Ra
 builder.Services.AddHttpClient<IRecommendationService, AiRecommendationService>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["Secret"];
+var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is missing.");
 
 var key = Encoding.UTF8.GetBytes(secretKey);
 
