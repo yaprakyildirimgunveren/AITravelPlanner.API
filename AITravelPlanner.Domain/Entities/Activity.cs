@@ -1,4 +1,4 @@
-﻿namespace AITravelPlanner.Domain.Entities
+namespace AITravelPlanner.Domain.Entities
 {
     public class Activity : BaseEntity
     {
@@ -9,7 +9,7 @@
         public decimal Price { get; set; }
         public string Category { get; set; } = string.Empty;
         public int TravelId { get; set; }
-        public Travel Travel { get; set; }
+        public Travel Travel { get; set; } = null!;
 
         public Activity() { }
 

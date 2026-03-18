@@ -1,4 +1,4 @@
-﻿using AITravelPlanner.Data;
+using AITravelPlanner.Data;
 using AITravelPlanner.Domain.Entities;
 using AITravelPlanner.Services.Services.Abstract;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ namespace AITravelPlanner.Services.Services.Concrete
                 .ToListAsync();
         }
 
-        public async Task<Flight> GetFlightByIdAsync(int id)
+        public async Task<Flight?> GetFlightByIdAsync(int id)
         {
             return await _context.Flights.FindAsync(id);
         }
