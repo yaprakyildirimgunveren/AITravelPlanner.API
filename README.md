@@ -53,6 +53,7 @@ dotnet run --project AITravelPlanner.API
 
 Health and status:
 - http://localhost:5000/health
+- http://localhost:5000/health/db
 - http://localhost:5000/status
 
 ### AI Service (FastAPI)
@@ -86,6 +87,12 @@ Services:
 
 Docker env file:
 - `.env.docker` contains SQL Server password and connection string.
+
+Seed verification:
+- After first run, `GET /api/Travel/user/1` returns seeded travel data.
+
+Docker volume persistence:
+- Stop containers and run `docker compose up` again; seeded data remains in SQL Server volume.
 
 ## 👨‍💻 Contributors
 - **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
