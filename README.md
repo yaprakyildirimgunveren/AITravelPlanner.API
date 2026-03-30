@@ -95,7 +95,7 @@ Docker volume persistence:
 - Stop containers and run `docker compose up` again; seeded data remains in SQL Server volume.
 
 ## 👨‍💻 Contributors
-- **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
+- **[Yaprak Yıldırım](https://github.com/yaprakyildirimgunveren)** - Maintainer
 
 ---
 
