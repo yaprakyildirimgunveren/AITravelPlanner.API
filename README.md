@@ -94,6 +94,12 @@ Seed verification:
 Docker volume persistence:
 - Stop containers and run `docker compose up` again; seeded data remains in SQL Server volume.
 
+## 📸 Screenshots
+![Frontend UI](docs/screenshots/frontend-ui.png)
+![AI Service Health](docs/screenshots/ai-service-health.png)
+![API Health](docs/screenshots/api-health.png)
+![Status Page](docs/screenshots/status-page.png)
+
 ## 👨‍💻 Contributors
 - **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
 
