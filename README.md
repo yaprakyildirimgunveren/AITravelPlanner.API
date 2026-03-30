@@ -101,11 +101,11 @@ Docker volume persistence:
 ![Status Page](docs/screenshots/status-page.png)
 
 ## 👨‍💻 Contributors
-- **[Yaprak Yıldırım](https://github.com/yaprakyildirim)** - Maintainer
+- **[Yaprak Yıldırım](https://github.com/yaprakyildirimgunveren)** - Maintainer
 
 ---
 
 ## ⭐ Support & Feedback
 If you find this project useful, consider giving it a ⭐ on GitHub!
 
-For issues & suggestions, open a new issue in the [GitHub Repository](https://github.com/yaprakyildirim/AITravelPlanner.API/issues).
+For issues & suggestions, open a new issue in the [GitHub Repository](https://github.com/yaprakyildirimgunveren/AITravelPlanner.API/issues).
