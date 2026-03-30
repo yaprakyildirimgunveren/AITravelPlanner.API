@@ -94,6 +94,12 @@ Seed verification:
 Docker volume persistence:
 - Stop containers and run `docker compose up` again; seeded data remains in SQL Server volume.
 
+## 📸 Screenshots
+![Frontend UI](docs/screenshots/frontend-ui.png)
+![AI Service Health](docs/screenshots/ai-service-health.png)
+![API Health](docs/screenshots/api-health.png)
+![Status Page](docs/screenshots/status-page.png)
+
 ## 👨‍💻 Contributors
 - **[Yaprak Yıldırım](https://github.com/yaprakyildirimgunveren)** - Maintainer
 
@@ -102,4 +108,4 @@ Docker volume persistence:
 ## ⭐ Support & Feedback
 If you find this project useful, consider giving it a ⭐ on GitHub!
 
-For issues & suggestions, open a new issue in the [GitHub Repository](https://github.com/yaprakyildirim/AITravelPlanner.API/issues).
+For issues & suggestions, open a new issue in the [GitHub Repository](https://github.com/yaprakyildirimgunveren/AITravelPlanner.API/issues).
